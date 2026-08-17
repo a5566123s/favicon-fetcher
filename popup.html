@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Favicon 获取器</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Favicon 获取器</h1>
+    </header>
+
+    <!-- 主区域：图标预览 + 域名 + 来源 -->
+    <div class="preview-area">
+      <div class="icon-container" id="iconContainer">
+        <img id="faviconPreview" class="favicon-preview" src="" alt="favicon" />
+        <div class="loading-spinner" id="loadingSpinner"></div>
+      </div>
+      <div class="info-area">
+        <div class="domain" id="domainDisplay">—</div>
+        <div class="source-label" id="sourceLabel">加载中…</div>
+      </div>
+    </div>
+
+    <!-- 候选列表 -->
+    <div class="section">
+      <div class="section-header">
+        <span>候选图标</span>
+        <span class="count-badge" id="countBadge">0</span>
+      </div>
+      <div class="candidates-row" id="candidatesRow">
+        <div class="empty-hint">暂无候选</div>
+      </div>
+    </div>
+
+    <!-- 操作按钮 -->
+    <div class="actions">
+      <button class="btn btn-primary" id="btnDownload" disabled>
+        <span class="btn-icon">⬇</span> 下载
+      </button>
+      <button class="btn btn-secondary" id="btnCopyBase64" disabled>
+        <span class="btn-icon">📄</span> Base64
+      </button>
+      <button class="btn btn-secondary" id="btnCopyUrl" disabled>
+        <span class="btn-icon">📋</span> 复制链接
+      </button>
+    </div>
+
+    <!-- 手动输入 -->
+    <div class="section manual-section">
+      <label class="section-header" for="manualInput">或输入域名手动获取</label>
+      <div class="input-row">
+        <input type="text" id="manualInput" placeholder="例如 google.com" />
+        <button class="btn btn-accent" id="btnManualFetch">获取</button>
+      </div>
+    </div>
+
+    <!-- 状态 / 错误信息 -->
+    <div class="status-bar" id="statusBar"></div>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
