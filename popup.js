@@ -354,36 +354,81 @@ function bindCopyBase64() {
       }
     }
 
-    // HTTP(S) URL → 下载 → 转 Base64
-    setStatus('正在编码…', '');
-    try {
-      const dataUrl = await fetchAsBase64(selectedUrl);
-      // 使用用户指定的格式 data:image/x-icon;base64,...
-      // 但保持原始的 MIME type
-      await navigator.clipboard.writeText(dataUrl);
-      setStatus('Base64 已复制到剪贴板（共 ' + formatSize(dataUrl.length) + '）', 'success');
-    } catch (e) {
-      setStatus('Base64 编码失败：' + e.message, 'error');
-    }
+// HTTP(S) URL → 下载 → 压缩（>50KB 自动降尺寸）→ 转 Base64
+	    setStatus('正在获取并编码…', '');
+	    try {
+	      const dataUrl = await fetchAndCompressToBase64(selectedUrl, 50 * 1024);
+	      await navigator.clipboard.writeText(dataUrl);
+	      const kb = (dataUrl.length / 1024).toFixed(1);
+	      setStatus('Base64 已复制到剪贴板（' + kb + ' KB）', 'success');
+	    } catch (e) {
+	      setStatus('Base64 编码失败：' + e.message, 'error');
+	    }
   });
 }
 
 /**
- * 获取 URL 内容并转为 data: URL
+ * 获取 URL 内容 → 若 > maxBytes 则自动压缩（Canvas 降维）→ 转为 data: URL
  */
-async function fetchAsBase64(url) {
+async function fetchAndCompressToBase64(url, maxBytes) {
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error('HTTP ' + response.status);
   }
 
-  const blob = await response.blob();
+  let blob = await response.blob();
+
+  // 超过大小限制 → 用 Canvas 等比缩小
+  if (blob.size > maxBytes) {
+    blob = await compressBlob(blob, maxBytes);
+  }
 
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onloadend = () => resolve(reader.result);
     reader.onerror = () => reject(new Error('FileReader 读取失败'));
     reader.readAsDataURL(blob);
+  });
+}
+
+/**
+ * 将 Blob 图片压缩到 maxBytes 以内（等比缩放，每次缩减 20% 尺寸）
+ */
+async function compressBlob(blob, maxBytes) {
+  const img = await blobToImage(blob);
+  let scale = 1.0;
+
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+
+  for (let i = 0; i < 30; i++) {
+    const w = Math.max(1, Math.round(img.naturalWidth * scale));
+    const h = Math.max(1, Math.round(img.naturalHeight * scale));
+
+    canvas.width = w;
+    canvas.height = h;
+    ctx.clearRect(0, 0, w, h);
+    ctx.drawImage(img, 0, 0, w, h);
+
+    const out = await new Promise(r => canvas.toBlob(r, 'image/png'));
+    if (out.size <= maxBytes || w <= 1 || h <= 1) return out;
+
+    scale *= 0.80; // 每次减少 20% 尺寸
+  }
+
+  return blob; // 回退返回原始 blob
+}
+
+/**
+ * Blob → Image 元素
+ */
+function blobToImage(blob) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.onload = () => { URL.revokeObjectURL(url); resolve(img); };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('图片加载失败')); };
+    img.src = url;
   });
 }
 
