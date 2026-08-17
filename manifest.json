@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Favicon 获取器",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "一键获取并下载任意网站的 favicon 图标。自动解析标签页图标、HTML link 标签、favicon.ico 及 Google 回退服务。",
   "permissions": ["activeTab", "scripting", "downloads", "clipboardWrite"
   ],
