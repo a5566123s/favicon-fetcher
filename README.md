@@ -1,92 +1,184 @@
-# Favicon 获取器 / Favicon Fetcher
+<div align="center">
 
-一键获取并下载任意网站的 favicon 图标 —— 解决「标签页有图标但 `/favicon.ico` 404」的问题。
+# <img src="icons/icon128.png" width="32" height="32" alt="logo" valign="middle"> Favicon 获取器 &ensp;·&ensp; Favicon Fetcher
 
-One-click fetch and download favicons for any website — solves the "tab shows an icon but `/favicon.ico` returns 404" problem.
+**一键获取并下载任意网站的 favicon 图标**
+**One-click fetch and download favicons for any website**
+
+![Version](https://img.shields.io/badge/version-1.1.0-blue?style=flat-square)
+![License](https://img.shields.io/badge/license-MIT-green?style=flat-square)
+![Chrome](https://img.shields.io/badge/Chrome-MV3-4285F4?style=flat-square&logo=googlechrome&logoColor=white)
+![Manifest](https://img.shields.io/badge/Manifest-v3-FF7139?style=flat-square)
+
+> 🎯 **解决「标签页明明有图标，但 `/favicon.ico` 会 404」的问题**  
+> **Solves the \*"tab shows an icon but `/favicon.ico` returns 404"\* problem**
+
+</div>
 
 ---
 
-## 问题 / The Problem
+## ✨ 功能亮点 / Features
 
-现代网站通常不再使用 `/favicon.ico`，而是在 HTML 中通过 `<link rel="icon">` 声明图标路径。Chrome 标签页能正常显示图标，但直接访问 `/favicon.ico` 会返回 404。这个扩展正是为了解决这个问题。
+|    | 功能 | 说明 |
+| -- | ---- | ---- |
+| 🚀 | **一键获取** | 点击工具栏图标，自动解析当前网站的所有图标候选 |
+| 🔍 | **四层探测** | `favIconUrl` → `<link>` 标签 → `/favicon.ico` → Google 回退服务 |
+| 🖼️ | **候选列表** | 所有候选以缩略图横向排列，点击切换预览 |
+| ⬇️ | **下载** | 一键保存为 `.png` / `.ico` / `.svg` |
+| 📋 | **复制 URL** | 复制选中图标的原始链接 |
+| 📄 | **复制 Base64** | 复制 `data:image/…;base64,…` 格式，**>50KB 自动降维压缩** |
+| ⌨️ | **手动查询** | 支持直接输入域名获取（无需打开目标网站） |
 
-Modern websites rarely use `/favicon.ico`. Instead, they declare icon paths via `<link rel="icon">` in HTML. Chrome displays the icon correctly in the tab, but `/favicon.ico` returns 404. This extension solves that.
+---
 
-## 功能 / Features
+## 🔍 它是如何工作的 / How It Works
 
-- **一键获取** — 点击工具栏图标，自动解析当前网站的 favicon
-- **多来源探测** 按优先级依次尝试：
-  1. `chrome.tabs` 的 `favIconUrl`（Chrome 已解析的标签页图标，最权威）
-  2. 注入 content script 扫描 `<link rel="icon / apple-touch-icon / mask-icon / …">` 标签
-  3. 回退 `https://域名/favicon.ico`
-  4. Google s2 回退服务（`www.google.com/s2/favicons`）
-- **候选列表** — 显示所有候选缩略图，点击切换预览
-- **下载** — 一键保存图标文件
-- **复制 URL** — 复制当前选中候选的原始链接
-- **复制 Base64** — 获取图标的 data URL（`data:image/png;base64,…`），>50KB 自动压缩
-- **手动输入域名** — 当前标签页不可用时（如 `chrome://` 页面），可输入域名直接查询
+扩展按优先级依次探测，取第一个可用的结果：
 
-## 安装 / Installation
+<div align="center">
 
-### 从 Chrome 开发者模式加载
+```
+┌───────────────────────────────────────────────────────────┐
+│  ①  chrome.tabs.favIconUrl                                │
+│     ← 标签页实际显示的图标（Chrome 已帮你解析好了）        │
+├───────────────────────────────────────────────────────────┤
+│  ②  content.js 扫描页面 <link> 标签                       │
+│     ← <link rel="icon"> / <link rel="apple-touch-icon">   │
+│     ← 按尺寸从大到小排序，PNG > SVG > ICO                  │
+├───────────────────────────────────────────────────────────┤
+│  ③  https://域名/favicon.ico                              │
+│     ← 经典路径，作为兜底                                  │
+├───────────────────────────────────────────────────────────┤
+│  ④  Google s2 Favicon 服务                                │
+│     ← 最终保底，始终可用                                  │
+└───────────────────────────────────────────────────────────┘
+```
 
-1. 打开 `chrome://extensions`
-2. 开启右上角 **开发者模式**
-3. 点击 **「加载已解压的扩展程序」**
-4. 选择 `favicon-fetcher/` 目录
+</div>
 
-### 从源码构建（无需构建）
+### 💡 核心洞察
 
-本项目是纯前端 Chrome 扩展，无依赖、无需构建工具。下载源码后直接按上述步骤加载即可。
+现代网站通常**不再使用** `/favicon.ico`。它们会在 HTML `<head>` 里写：
 
-## 使用方法 / Usage
+```html
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
+```
 
-1. 访问任意网站
-2. 点击浏览器工具栏中的 Favicon 获取器图标
-3. 弹窗自动显示当前网站的 favicon 预览
-4. **候选列表** — 横向排列所有来源的图标，点击切换
-5. **下载** — 点击「下载」按钮保存图标
-6. **Base64** — 点击「Base64」按钮复制 data URL 到剪贴板
-7. **复制链接** — 点击「复制链接」获取当前选中的图标 URL
-8. **手动模式** — 在底部输入域名（如 `github.com`）点击获取
+Chrome 标签页显示的图标来源于这些 `<link>` 标签，而不是 `/favicon.ico`。  
+**这就是标签页有图标但 `/favicon.ico` 404 的根本原因。**
 
-## 技术细节 / Technical Details
+---
 
-| 方面 | 说明 |
-|------|------|
-| 架构 | Manifest V3 |
-| 核心权限 | `activeTab`、`scripting`、`downloads`、`clipboardWrite` |
-| 主机权限 | `*://*/*`（用于跨域获取 Base64 编码） |
-| 图标生成 | 纯 Node.js 实现（zlib + Buffer），无第三方依赖 |
-| 自动压缩 | 复制 Base64 时 >50KB 自动 Canvas 降维压缩 |
+## 📦 安装 / Installation
 
-### 文件结构
+### 从源码加载（Chrome 开发者模式）
+
+```bash
+git clone https://github.com/a5566123s/favicon-fetcher.git
+```
+
+| 步骤 | 操作 |
+| ---- | ---- |
+| ① | 打开 `chrome://extensions` |
+| ② | 开启右上角 **「开发者模式」** |
+| ③ | 点击 **「加载已解压的扩展程序」** |
+| ④ | 选择 `favicon-fetcher/` 目录 |
+
+> 📌 **无需构建** — 纯前端扩展，零依赖，下载即用。
+
+---
+
+## 🎮 使用方法 / Usage
+
+| 场景 | 操作 |
+| ---- | ---- |
+| **获取当前网站图标** | 点击浏览器工具栏的 🔵 Favicon 获取器图标 |
+| **切换候选** | 点击候选缩略图中的任意一个 |
+| **下载图标** | 选中后点击 ⬇️ **下载** 按钮 |
+| **复制 Base64** | 选中后点击 📄 **Base64** 按钮（>50KB 自动压缩） |
+| **复制链接** | 选中后点击 📋 **复制链接** 按钮 |
+| **查询其他网站** | 在弹窗底部输入域名（如 `github.com`），点击 **获取** |
+
+### 浏览器工具栏效果
+
+```
+┌─────────────────────────────────────────────┐
+│  🔵  ← 点击扩展图标                         │
+│                                             │
+│  ┌─────────────────────────────────────┐    │
+│  │  Favicon 获取器                      │    │
+│  │  ┌──────────┐                       │    │
+│  │  │  大图标   │   example.com        │    │
+│  │  │  预览    │   来自标签页图标      │    │
+│  │  └──────────┘                       │    │
+│  │  ┌─┐ ┌─┐ ┌─┐ ┌─┐ 候选             │    │
+│  │  │ │ │ │ │ │ │ │                    │    │
+│  │  └─┘ └─┘ └─┘ └─┘                  │    │
+│  │  [⬇下载] [📄Base64] [📋复制链接]    │    │
+│  │  或输入域名: [________] [获取]      │    │
+│  └─────────────────────────────────────┘    │
+└─────────────────────────────────────────────┘
+```
+
+---
+
+## 🗂️ 项目结构 / Project Structure
 
 ```
 favicon-fetcher/
-├── manifest.json          # MV3 清单
-├── popup.html             # 弹窗 UI
-├── popup.css              # 深色主题样式
-├── popup.js               # 主逻辑
-├── content.js             # 页面内扫描 <link> 标签
-├── icons/                 # 扩展图标
-│   ├── icon16.png
-│   ├── icon32.png
-│   ├── icon48.png
-│   └── icon128.png
-└── generate_icons.js      # 图标生成脚本（已运行，无需再次执行）
+├── manifest.json            # Chrome Manifest V3 清单
+├── popup.html               # 弹窗 UI（含手动输入）
+├── popup.css                # 深色主题样式
+├── popup.js                 # 主逻辑：探测候选、渲染、下载、Base64 编码与压缩
+├── content.js               # 注入页面，扫描 <link rel="icon"> 标签
+├── icons/
+│   ├── icon16.png           # 工具栏图标 16×16
+│   ├── icon32.png           # 工具栏图标 32×32（Retina）
+│   ├── icon48.png           # 扩展管理页 48×48
+│   └── icon128.png          # Chrome Web Store 128×128
+├── generate_icons.js        # 图标生成脚本（已运行，无需再执行）
+├── README.md                # 本文件
+└── LICENSE                  # MIT 许可证
 ```
 
-## 开发 / Development
+---
+
+## 🔧 技术细节 / Technical Details
+
+| 方面 | 说明 |
+|------|------|
+| 📐 **架构** | Manifest V3（Chrome 扩展最新标准） |
+| 🔑 **权限** | `activeTab` · `scripting` · `downloads` · `clipboardWrite` |
+| 🌐 **主机权限** | `*://*/*`（用于跨域获取图片内容做 Base64 编码） |
+| 🎨 **图标生成** | 纯 Node.js（`zlib` + `Buffer`），**零第三方依赖** |
+| 🏋️ **自动压缩** | 复制 Base64 时 >50KB 自动 Canvas 等比降维，每次缩减 20% 直至达标 |
+
+---
+
+## 🧑‍💻 开发 / Development
 
 ```bash
-# 安装（无依赖）
-# 直接加载已解压的扩展即可
+# 环境要求：仅需 Node.js（用于图标生成）
+node --version  # ≥ 12
 
-# 重新生成图标（如需修改）
+# 重新生成扩展图标
 node generate_icons.js
+
+# 加载方式同上：chrome://extensions → 加载已解压的扩展程序
 ```
 
-## 许可 / License
+---
 
-MIT
+## 📜 许可 / License
+
+[MIT](LICENSE) © 2026 a5566123s
+
+---
+
+<div align="center">
+
+**⭐ 如果这个扩展对你有帮助，欢迎 Star！**  
+**If you find this extension useful, feel free to give it a star!**
+
+</div>
