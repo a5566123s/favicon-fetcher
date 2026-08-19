@@ -72,7 +72,27 @@ Chrome 标签页显示的图标来源于这些 `<link>` 标签，而不是 `/fav
 
 ## 📦 安装 / Installation
 
-### 从源码加载（Chrome 开发者模式）
+### 方式一：从 GitHub Release 安装 CRX（推荐）
+
+1. 打开 [Releases 页面](https://github.com/a5566123s/favicon-fetcher/releases)
+2. 下载最新版本的 `favicon-fetcher-vX.X.X.crx` 文件
+3. 打开 `chrome://extensions`
+4. 将 `.crx` 文件**拖拽**到页面中即可安装
+
+> **注意**：如果 Chrome 提示「只能安装来自 Chrome 网上应用店的扩展」，请开启右上角 **开发者模式** 再拖拽一次。
+>
+> ⚠️ CRX 与私钥绑定，后续版本都会使用同一签名，保持扩展 ID 不变，更新时直接覆盖安装即可。
+
+### 方式二：从 ZIP 解压后加载（开发者模式）
+
+1. 从 [Releases 页面](https://github.com/a5566123s/favicon-fetcher/releases) 下载 `favicon-fetcher-vX.X.X.zip`
+2. 解压到本地目录
+3. 打开 `chrome://extensions`
+4. 开启右上角 **「开发者模式」**
+5. 点击 **「加载已解压的扩展程序」**
+6. 选择解压后的文件夹
+
+### 方式三：从源码加载
 
 ```bash
 git clone https://github.com/a5566123s/favicon-fetcher.git
